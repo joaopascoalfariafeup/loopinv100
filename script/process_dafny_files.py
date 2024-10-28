@@ -45,12 +45,9 @@ verbose = 1
 # verifier timeout in seconds
 verifier_timeout = 60
 
-# List of LLMs to try in sequence (if the first fails)
+# List of LLMs to try in sequence
 llms = [LLMData(API.OpenAI, "gpt-4o-2024-08-06", 0.5, 5, 5)]
-#        LLMData(API.OpenAI, "gpt-4o-2024-08-06", 0.5, 5, 5)] 
-##        LLMData(API.Antrophic, "claude-3-5-sonnet-20240620", 0.5, 3, 3)]         
-#llms = [LLMData(API.Antrophic, "claude-3-5-sonnet-20241022", 0.5, 5, 5)]  
-#llms2 = [LLMData(API.OpenAI, "gpt-4-0613", 0.5, 5, 5)] 
+#llms = [LLMData(API.Antrophic, "claude-3-5-sonnet-20241022", 0.5, 5, 5)]    
         
 #####  Imports ##### 
 import os
@@ -123,59 +120,10 @@ Guidelines for Writing Invariants:
 Failure to strictly follow these instructions will result in incorrect output.
 """
 
+######## Global initializations ########
 
-base2 = """"
-
-You are an expert in the Dafny programming language and formal verification. 
-
-Your task is to add adequate loop invariants in all 'while' or 'for' loops in the Dafny code provided by the user, taking into account the following instructions:
-- The original Dafny code is provided between BEGIN DAFNY and END DAFNY.
-- Do not modify the original code, just add the needed loop invariants.
-- Do just output the Dafny code, without explanations.
-
-Guidelines for discovering loop invariants: 
-- Try to create loop invariants with a structure similar to the method post-conditions, to ensure them incrementally as the loop progresses.
-- Try to use sequence operations, instead of quantifiers over arrays, when possible.
-- Do not forget to indicate applicable lower bounds, as in 'forall k :: 0 <= k <= n ', instead of 'forall k :: k < n'.
-- In the invariants, do not use uninitialized output / result parameters.
-- Before diving into writing invariants, thoroughly understand each variable's role in the algorithm and how they relate to each other, taking advantage of any explanatory comments in the code.
-- Try to create separate invariants for each variable manipulated in the loop, determining their state as a function of the method inputs, the loop iterators and variables constrained by previous invariants.  
-- Do not include redundant invariants. 
-
-To avoid syntactic errors:
-- The loop invariants should be written after the loop header and before the opening braces of the loop body as in:
-      while i < n 
-        invariant 0 <= i <= n 
-      { 
-        i := i+1; 
-      }
-- The length of a sequence 's' is given by '|s|'. The length of an array 'a' is given by 'a.Length'.
-- The logical implication operator in Dafny is '==>', not '=>'.
-- Dot operators, like s.Map, s.Contains, s.Exists, s.Min or s.Max, are not supported in Dafny over sequences or sets 's'.
-"""
-
-#- A semi-colon is not needed at the end of each invariant.
-
-# dynamic prompt component in the presence of predicates and functions
-prompt_preds = """- Auxiliary predicates and functions provided in the code should be reused whenever possible."""
-
-prompt_for = """- In 'for' loops, the upper bound is exclusive.
-- 'for' loops do not need a 'decreases' clause.
-- 'for' loops do not need a loop invariant for the loop index bounds."""
-
-prompt_downto = """- In the case of descending 'for' loops (downto), the loop iterator is implicitly decremented at the begin of the loop body (not at the end)."""
-prompt_by_method = """- The syntax 'function (specification) by method (implementation)' is valid in Dafny."""
-
-prompt_modifies_array = """- When an array is modified in the loop, a loop invariant should exist for each segment unchanged up to the current iteration, using old()."""
-
-prompt_boolean = """- When boolean variables are manipulated in a loop, the loop invariants should describe the conditions upon which they may be true and false (covering both cases)."""
-
-# Reference types (arrays, classes, etc.) do not admit null unless annotated with the suffix '?'.
-
-# output folder
+# createfolderoutput folder
 output_folder = output_folder_base + "/" + llms[0].model + " - " + str(llms[0].temperature) + " - " + time.strftime(r"%Y-%m-%d %H-%M")
-
-# create folder
 os.makedirs(output_folder, exist_ok=True)
 
 # initialize the log file
@@ -184,6 +132,8 @@ log_file = open(output_folder + r"\_log.txt", "w")
 # initialize the API clients
 clientOpenAI = OpenAI(api_key = openai_key)
 clientAnthropic = anthropic.Anthropic(api_key = antrophic_key)
+
+######## Dany file merging ########
 
 # Merges the contents of two files (represented as strings) without duplicating common lines.
 # Returns the merged content as a list of lines.
@@ -197,9 +147,11 @@ def merge_files(file1, file2):
         # get the next lines from each file to local variables
         line1 = file1_lines[index1]
         line2 = file2_lines[index2]
+
         # remove all whitespaces from each line
         line1_stripped = line1.strip().replace(" ","")
         line2_stripped = line2.strip().replace(" ","")
+        
         # remove all characters after // in each line (in case they appear)
         if '//' in line1_stripped:
             line1_stripped = line1_stripped[:line1_stripped.index('//')]
@@ -264,6 +216,60 @@ def merge_files(file1, file2):
 
 tokens_spent = 0
 
+######## Stripping loop invariants from a Dafny file ########
+
+# Strips the loop invariants from a Dafny file and saves the result to a new file
+def remove_invariant_lines_and_save(filepath):
+    # Get filename from filepath
+    filename = os.path.basename(filepath)
+
+    # Determine the new filename by appending 'stripped' before the .dfy extension
+    new_filename = f"{filename[:-4]}_stripped.dfy"
+
+    # Determine the new filepath by joining the output folder and the new filename
+    new_filepath = os.path.join(output_folder, new_filename)
+
+    # Read the lines of the source file
+    with open(filepath, 'r') as file:
+        lines = file.readlines()
+
+    # Filter out lines that contain the keyword 'invariant'
+    new_lines = [line for line in lines if 'invariant' not in line]
+
+    # Write the filtered lines to the new file
+    with open(new_filepath, 'w') as new_file:
+        new_file.writelines(new_lines)
+
+    if verbose > 1:    
+        print(f"Stripped file saved to {new_filepath}.")
+    log_file.write(f"Stripped file saved to {new_filepath}.")
+
+    return new_filepath
+
+####### Dafny file verification #######
+
+# Verifies a Dafny file using the Dafny verifier
+def verify_dafny_file(filepath):
+    # run the vrifier
+    process = subprocess.Popen([dafny_executable,"verify", filepath,"--verification-time-limit:" + str(verifier_timeout)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+
+    # save the output messages to the log file
+    log_file.write(stdout.decode('utf-8'))
+
+    # determine outcome
+    if b"resolution/type errors" in stdout or b"parse errors" in stdout:
+        return -1 # syntax errors
+    else:
+        if stdout.decode('utf-8').strip().endswith('0 errors'):
+            return 1 # success
+        else:    
+            return 0 # failure
+
+
+####### LLM processing #######
+
+# Processes a Dafny file using the LLM to generate loop invariants
 def process_file(filepath, llm_data, trial_number, prev_succeeded,post_processing = True, refined_prompt = True, fix=False):
     
     time_spent_api_call = 0
@@ -285,37 +291,25 @@ def process_file(filepath, llm_data, trial_number, prev_succeeded,post_processin
         else:
             instructions_prompt = base_prompt
         
-        lines = instructions_prompt.split('\n')
-
         # remove dynamic parts of the prompt based on the file content 
-        #if 'predicate ' not in file_content and 'function' not in file_content:
-        #    lines = [line for line in lines if 'predicate' not in line and 'function' not in line]
-
+        lines = instructions_prompt.split('\n') # split the prompt into lines
         if 'for ' not in file_content:
             lines = [line for line in lines if 'for' not in line]
-
         if 'downto ' not in file_content:
             lines = [line for line in lines if 'downto' not in line]
-                
         if 'by method' in file_content:
             lines = [line for line in lines if 'by method' not in line]
-
         if 'modifies ' not in file_content:
             lines = [line for line in lines if 'modifies' not in line]
-
         if 'boolean ' not in file_content:
             lines = [line for line in lines if 'boolean' not in line]
-
-        # merge lines to form the prompt
-        instructions_prompt = "\n".join(lines)    
-
-    # Add the file content to the prompt
-    code_prompt = "BEGIN DAFNY\n" + file_content + "\nEND DAFNY\n"
-
-    # minimal_prompt
-    if not refined_prompt:
+        instructions_prompt = "\n".join(lines)  # merge the lines back into a single string  
+    
+    else:
         instructions_prompt = minimal_prompt
 
+    # Add the file content to the user prompt
+    code_prompt = "BEGIN DAFNY\n" + file_content + "\nEND DAFNY\n"
 
     # save the prompt to a filename terminating in _prompt.txt
     with open(new_filepath.replace('_gpt.dfy', '_prompt.txt'), 'w', encoding='utf-8') as prompt_file:
@@ -460,7 +454,6 @@ def process_file(filepath, llm_data, trial_number, prev_succeeded,post_processin
                 merged_output = merge_files(file_content, output)
 
 
-
         # similar to the previous step, but for the merged output
         with open(new_filepath.replace('_gpt.dfy', '_merged.dfy'), 'w', encoding='utf-8') as new_file:
             new_file.write(merged_output)
@@ -478,63 +471,20 @@ def process_file(filepath, llm_data, trial_number, prev_succeeded,post_processin
 
     return new_filepath.replace('_gpt.dfy', '_merged.dfy'), time_spent_api_call
 
-
-def remove_invariant_lines_and_save(filepath):
-    # Get filename from filepath
-    filename = os.path.basename(filepath)
-
-    # Determine the new filename by appending 'stripped' before the .dfy extension
-    new_filename = f"{filename[:-4]}_stripped.dfy"
-
-    # Determine the new filepath by joining the output folder and the new filename
-    new_filepath = os.path.join(output_folder, new_filename)
-
-    # Read the lines of the source file
-    with open(filepath, 'r') as file:
-        lines = file.readlines()
-
-    # Filter out lines that contain the keyword 'invariant'
-    new_lines = [line for line in lines if 'invariant' not in line]
-
-    # Write the filtered lines to the new file
-    with open(new_filepath, 'w') as new_file:
-        new_file.writelines(new_lines)
-
-    if verbose > 1:    
-        print(f"Stripped file saved to {new_filepath}.")
-    log_file.write(f"Stripped file saved to {new_filepath}.")
-
-    return new_filepath
-
-
-def verify_dafny_file(filepath):
-    process = subprocess.Popen([dafny_executable,"verify", filepath,"--verification-time-limit:" + str(verifier_timeout)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-    stdout, stderr = process.communicate()
-
-    log_file.write(stdout.decode('utf-8'))
-
-    # check for "resolution/type errors" or "parse errors" (syntax errors)
-    if b"resolution/type errors" in stdout or b"parse errors" in stdout:
-        return -1
     
-    if stdout.decode('utf-8').strip().endswith('0 errors'):
-        return 1
-    
-    return 0
-    
-
+# Process all Dany files in the input folder
 def process_directory(refined_prompt = True, post_processing = True):
     counter = 0
     success = 0
     total_attempts = 0
     original_files_skipped = []
+    failed_files = []
 
     # create CSV file to store the results
     results_file = open(output_folder + r"\_results.csv", "w")
     results_file.write("Filename; Attempt; Success; Time Gen; Time Ver; Time API Call; Success Merged Original\n")
 
-    failed_files = []
+    # loop through the files in the input folder
     for filename in os.listdir(input_folder):
         if filename.endswith('.dfy'):
 
@@ -556,7 +506,7 @@ def process_directory(refined_prompt = True, post_processing = True):
             succeed = False
             gpt_output_file = ""
 
-            # loop through the LLMs in list llms
+            # loop through the LLMs in the list of llms
             for llm_data in llms:
                 if succeeded > 0:
                     break
@@ -600,11 +550,8 @@ def process_directory(refined_prompt = True, post_processing = True):
                             new_file.write(merged_with_original_content)
                         succ2 = verify_dafny_file(merged_with_original_path)
         
-
                     # write the results to the CSV file
                     results_file.write(f"{filename}; {attempts}; {succ}; {time_spent:.4f}; {time_spent2:.4f}; {time3: .4f}; {succ2}\n")
-
-                    #flush
                     results_file.flush()
 
             if succeed:
@@ -618,7 +565,6 @@ def process_directory(refined_prompt = True, post_processing = True):
             counter += 1
             if verbose > 0:
                 print(f"Processed so far {counter} files, {success} verified successfully in {total_attempts} attempts")
-            #print(f"Frequency of attempts in successful jobs so far: {attempts_frquencey}")
             if verbose > 0 and len(original_files_skipped) > 0:
                 print(f"Original files not verified and skipped so far: {original_files_skipped}")
             
@@ -632,4 +578,5 @@ def process_directory(refined_prompt = True, post_processing = True):
     if len(original_files_skipped) > 0:
         print(f"Original files not verified and skipped: {original_files_skipped}")
 
+# entry point
 process_directory()
