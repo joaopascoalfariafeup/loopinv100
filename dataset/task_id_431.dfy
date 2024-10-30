@@ -3,6 +3,7 @@ method HasCommonElement<T(==)>(a: array<T>, b: array<T>) returns (result: bool)
     ensures result <==> exists i, j :: 0 <= i < a.Length 
                                && 0 <= j < b.Length && a[i] == b[j]
 {
+    result := false;
     for i := 0 to a.Length
         invariant forall k, l :: 0 <= k < i && 0 <= l < b.Length ==> a[k] != b[l]
     {
