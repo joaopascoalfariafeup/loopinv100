@@ -1,3 +1,8 @@
+/* 
+* Verification in Dafny of the fast modular exponentiation algorithm,  
+* as described in: https://en.wikipedia.org/wiki/Modular_exponentiation
+*/
+
 // Recursive definition of x^n.
 function Power(x: nat, n: nat) : (p: nat) {
     if n == 0 then 1 else x * Power(x, n-1)
@@ -21,14 +26,14 @@ by method
     }
 }
 
-// Definition of x^n mod m.
+// Definition of x^n mod m, with m > 0.
 function PowerMod(x: nat, n: nat, m: nat) : (res: nat) 
   requires m > 1
 {
     Power(x, n) % m
 }
 // Iterative computation of x^n mod m in time O(log n) by the 
-// fast modular exponentiation algorithm.
+// fast modular exponentiation algorithm, avoiding overflows.
 by method
 {
     var mn: nat := n; // remaining exponent
@@ -56,11 +61,10 @@ by method
         mx2 := (mx2 * mx2) % m;
     }
     
-    assert Power(x, n) % m == p % m == p2; // helper
     return p2;
 }
 
-// Sattes the property (proved automatically) that x^(2n) = (x^2)^n.
+// States the property (proved automatically) that x^(2n) = (x^2)^n.
 lemma PowerLemma(x: nat, n: nat) 
   ensures Power(x, 2 * n) == Power(x * x, n) 
 {}
@@ -81,44 +85,38 @@ lemma ModLemma(a: nat, b: nat, m: nat)
     assert a * b == (q1 * m + r1) * (q2 * m + r2);
     var q := q1 * q2 * m + q1 * r2 + q2 * r1;
     var r := r1 * r2;
+    assert a * b == q * m + r;
     ModLemma2(q, r, m); // ==> (a * b) % m == (q * m + r) % m == r % m
  }
 
-// Prove by induction that (q * m + r) % m == r % m, with m > 0.
-lemma {:induction q} ModLemma2(q: nat, r: nat, m: nat)
+// Proves by contradiction that (q * m + r) % m == r % m, with m > 0.
+lemma  ModLemma2(q: nat, r: nat, m: nat)
   decreases q
   requires m > 0
   ensures (q * m + r) % m == r % m
 {
-    if q > 0 {
-        ModLemma2(q - 1, r + m, m); // ==> (q * m + r) % m == (r + m) % m
-        ModLemma3(r + m, m, r / m + 1, r % m); // ==> (r + m) % m == r % m
+    var q1 := (q * m + r) / m;
+    var r1 := (q * m + r) % m;
+    assert q * m + r == q1 * m + r1 && 0 <= r1 < m;
+    var q2 := r / m;
+    var r2 := r % m;
+    assert r == q2 * m + r2 && 0 <= r2 < m;
+    assert r1 - r2 == (q2 - q1 + q) * m; // subtracting the two previous equalities
+    if q2 - q1 + q > 0 {
+        ProdLemma(q2 - q1 + q, m); // ==> r1 - r2 == (q2 - q1 + 1) * m >= m
+        assert r1 - r2 >= m; // contradiciton
+    }
+    else if q2 - q1 + q < 0 {
+        ProdLemma(q1 - q - q2, m); //  ==> r2 - r1 == (q1 - 1 - q2) * m >= m;
+        assert r2 - r1 >= m; // contradiciton
     } 
-}
-
-// Proves by contradiction that if n == q * m + r and r < m (with m > 0), then r == n % m.
-lemma ModLemma3(n: nat, m: nat, q: nat, r: nat)
-    requires m > 0 && n == q * m + r && r < m
-    ensures r == n % m
-{
-    var q1 := n / m;
-    var r1 := n % m;
-    assert n == q1 * m + r1 && r1 < m;
-    if q < q1 {
-       ProdLemma(q1 - q, m); // ==> r - r1 == (q1 - q) * m >= m
-       assert r >= m; // contradiciton
-    }
-    else if q1 < q {
-       ProdLemma(q - q1, m); //  ==> r1 - r == (q - q1) * m >= m;
-       assert r1 >= m; // contradiciton
-    }
 }
 
 // States the property (proved automatically) that a * b >= b when a > 0.
 lemma ProdLemma(a: nat, b: nat)
  requires a > 0
  ensures a * b >= b
-{}
+{ }
 
 // A few test cases (checked statically by Dafny).
 method TestModularExponentiation() {
