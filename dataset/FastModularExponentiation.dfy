@@ -41,8 +41,8 @@ by method
     ghost var mx: nat := x; // remaining base for computing Power(x, n) (ghost)
     ghost var p : nat := 1; // partial result for computing Power(x, n) (ghost)
 
-    var mx2: nat := x % m; // remaining base for computing Power(x, n) % m (mx2 is the same as mx % m)
-    var p2 : nat := 1; // partial result for computing Power(x, n) % m (p2 is the same as p % m)
+    var mx2: nat := x % m; // remaining base for computing Power(x, n) % m (the same as mx % m)
+    var p2 : nat := 1; // partial result for computing Power(x, n) % m (is the same as p % m)
 
     while mn > 0 
         invariant Power(x, n) == p * Power(mx, mn)
@@ -64,12 +64,12 @@ by method
     return p2;
 }
 
-// States the property (proved automatically) that x^(2n) = (x^2)^n.
+// Proves (automatically) that x^(2n) = (x^2)^n.
 lemma PowerLemma(x: nat, n: nat) 
   ensures Power(x, 2 * n) == Power(x * x, n) 
 {}
 
-// Prove by deduction that (a * b) % m == ((a % m) * (b % m)) % m, with m > 0
+// Prove that (a * b) % m == ((a % m) * (b % m)) % m, with m > 0
 lemma ModLemma(a: nat, b: nat, m: nat)
   requires m > 0
   ensures (a * b) % m == ((a % m) * (b % m)) % m
@@ -82,40 +82,33 @@ lemma ModLemma(a: nat, b: nat, m: nat)
     var r2 := b % m;
     assert b == q2 * m + r2;
 
-    assert a * b == (q1 * m + r1) * (q2 * m + r2);
     var q := q1 * q2 * m + q1 * r2 + q2 * r1;
     var r := r1 * r2;
     assert a * b == q * m + r;
     ModLemma2(q, r, m); // ==> (a * b) % m == (q * m + r) % m == r % m
  }
 
-// Proves by contradiction that (q * m + r) % m == r % m, with m > 0.
-lemma  ModLemma2(q: nat, r: nat, m: nat)
-  decreases q
+// Proves that (q * m + r) % m == r % m, with m > 0.
+lemma ModLemma2(q: nat, r: nat, m: nat)
   requires m > 0
   ensures (q * m + r) % m == r % m
 {
     var q1 := (q * m + r) / m;
     var r1 := (q * m + r) % m;
     assert q * m + r == q1 * m + r1 && 0 <= r1 < m;
+    
     var q2 := r / m;
     var r2 := r % m;
     assert r == q2 * m + r2 && 0 <= r2 < m;
-    assert r1 - r2 == (q2 - q1 + q) * m; // subtracting the two previous equalities
-    if q2 - q1 + q > 0 {
-        ProdLemma(q2 - q1 + q, m); // ==> r1 - r2 == (q2 - q1 + 1) * m >= m
-        assert r1 - r2 >= m; // contradiciton
-    }
-    else if q2 - q1 + q < 0 {
-        ProdLemma(q1 - q - q2, m); //  ==> r2 - r1 == (q1 - 1 - q2) * m >= m;
-        assert r2 - r1 >= m; // contradiciton
-    } 
+    
+    assert 0 - m < r1 - r2 == (q2 - q1 + q) * m < m; // combining the previous assertions
+    ProdLemma(q2 - q1 + q, m); // ==> r1 - r2 == 0
 }
 
-// States the property (proved automatically) that a * b >= b when a > 0.
-lemma ProdLemma(a: nat, b: nat)
- requires a > 0
- ensures a * b >= b
+// Proves (automatically) that |a| * b >= b when |a| > 0.
+lemma ProdLemma(a: int, b: nat)
+ ensures a > 0 ==> a * b >= b
+ ensures a < 0 ==> a * b <= b
 { }
 
 // A few test cases (checked statically by Dafny).
