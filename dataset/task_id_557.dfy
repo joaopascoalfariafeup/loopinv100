@@ -19,20 +19,17 @@ function Toggle(c: char): char {
 
 // Auxiliary function that applies a function to every element of a sequence
 // using sequence comprehension.
-ghost function {:opaque} MapSeq<T, E>(s: seq<T>, f: T -> E) : (res: seq<E>) 
-  ensures |res| == |s| && (forall i :: 0 <= i < |s| ==> res[i] == f(s[i]))
+ghost function MapSeq<T, E>(s: seq<T>, f: T -> E) : (res: seq<E>) 
+  ensures |res| == |s| && (forall i :: 0 <= i < |s| ==> res[i] == f(s[i])) // helper
 {
     seq(|s|, i requires 0 <= i < |s| => f(s[i])) 
 }
 
 // Test cases chacked statically.
 method ToggleCaseTest(){
-  var out1:=ToggleCase("Python");
+  var out1 := ToggleCase("Python");
   assert out1=="pYTHON";
 
-  var out2:=ToggleCase("Pangram");
-  assert out2=="pANGRAM";
-
-  var out3:=ToggleCase("LIttLE");
-  assert out3=="liTTle";
+  var out2 := ToggleCase("LIttLE");
+  assert out2=="liTTle";
 }

@@ -1,6 +1,7 @@
 /* 
 * Verification in Dafny of the fast modular exponentiation algorithm,  
-* as described in: https://en.wikipedia.org/wiki/Modular_exponentiation
+* as described in https://en.wikipedia.org/wiki/Modular_exponentiation.
+* It is based on the fast exponentiation algorithm.
 */
 
 // Recursive definition of x^n.
@@ -26,7 +27,7 @@ by method
     }
 }
 
-// Definition of x^n mod m, with m > 0.
+// Definition of x^n mod m, with m > 1.
 function PowerMod(x: nat, n: nat, m: nat) : (res: nat) 
   requires m > 1
 {
@@ -65,7 +66,7 @@ by method
 }
 
 // Proves (automatically) that x^(2n) = (x^2)^n.
-lemma PowerLemma(x: nat, n: nat) 
+lemma {:induction n} PowerLemma(x: nat, n: nat) 
   ensures Power(x, 2 * n) == Power(x * x, n) 
 {}
 

@@ -1,22 +1,24 @@
-// Obtains the second smallest element in an array of integers.
+
+// Obtains the second smallest element in an array of integers(in a single scan).
 // The array must have at least two distinct elements.
 method SecondSmallest(s: array<int>) returns (secondSmallest: int)
-    requires ! allEqual(s[..])
-    ensures isSecondSmallest(s[..], secondSmallest)
+    requires exists i, j :: 0 <= i < j < s.Length && s[i] != s[j]
+    ensures exists i, j :: 0 <= i < s.Length && 0 <= j < s.Length &&
+                s[j] == secondSmallest > s[i] &&
+                (forall k :: 0 <= k < s.Length ==> s[k] == s[i] || s[k] >= s[j] > s[i]) 
+
 {
     // index of the smallest element inspected so far.
     var minIndex := 0; 
 
-    // index of the second smallest element inspected so far,
     // or -1 if all elements are equal so far.
     var secondMinIndex := -1; 
 
     for i := 1 to s.Length
       invariant 0 <= minIndex < i
       invariant -1 <= secondMinIndex < i
-      invariant isSmallest(s[..i], s[minIndex]) 
-      invariant secondMinIndex != -1 ==> isSecondSmallest(s[..i], s[secondMinIndex])
-      invariant secondMinIndex == -1 ==> allEqual(s[..i])  // not found by GPT!
+      invariant secondMinIndex != -1 ==> s[secondMinIndex] > s[minIndex]
+      invariant forall k :: 0 <= k < i ==> s[k] == s[minIndex] || (secondMinIndex != -1 && s[k] >= s[secondMinIndex])
     {
         if s[i] < s[minIndex] {
             secondMinIndex := minIndex;
@@ -27,21 +29,6 @@ method SecondSmallest(s: array<int>) returns (secondSmallest: int)
     }
 
     secondSmallest := s[secondMinIndex];
-}
-
-// Checks if all elemts in a sequence of integers are equal.
-ghost predicate allEqual(s: seq<int>) {
-    forall i, j :: 0 <= i < |s| && 0 <= j < |s| ==> s[i] == s[j]
-}
-
-// Checks if a value (x) is the smallest element of a sequence of integers (s).
-ghost predicate isSmallest(s: seq<int>, x: int) {
-    x in s[..] && (forall i :: 0 <= i < |s| ==> x <= s[i])
-}
-
-// Checks if a value (x) is the second smallest element of a sequence of integers (s).
-ghost predicate isSecondSmallest(s: seq<int>, x: int) {
-    x in s[..] && ! isSmallest(s, x) && (forall i :: 0 <= i < |s| && !isSmallest(s, s[i]) ==> x <= s[i])
 }
 
 // Test cases checked statically.

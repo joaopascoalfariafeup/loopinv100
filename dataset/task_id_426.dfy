@@ -27,14 +27,14 @@ function {:fuel 4} Filter<T(==)>(a: seq<T>, p: (T) -> bool): seq<T> {
 }
 
 // Auxiliary function that gives the last element of a non-empty sequence
-function Last<T>(a: seq<T>): T
+function {:fuel 2} Last<T>(a: seq<T>): T
   requires |a| > 0
 {
   a[|a| - 1]
 }
 
 // Auxiliary function that gives a sequence without the last element.
-function DropLast<T>(a: seq<T>): seq<T>
+function {:fuel 2} DropLast<T>(a: seq<T>): seq<T>
   requires |a| > 0
 {
   a[0..|a| - 1]

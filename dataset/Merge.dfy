@@ -5,6 +5,7 @@ predicate isSorted(a: seq<int>) {
 }
 
 // Merges two sorted arrays 'a' and 'b' into a new sorted array 'c'.
+// This routine is part of the merge sort algorithm. 
 method Merge(a: array<int>, b: array<int>) returns (c: array<int>)
    requires isSorted(a[..]) && isSorted(b[..])
    ensures fresh (c)

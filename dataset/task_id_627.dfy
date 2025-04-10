@@ -1,4 +1,8 @@
-// A bit more difficult example because of the need for extra assertions. 
+// Auxiliary predicate that checks if 'v' is the smallest natural number that 
+// is not present in a sequence (s) of natural numbers.
+predicate IsSmallestMissingNumber(s: seq<nat>, v: nat) {
+    v !in s && forall k : nat :: k < v ==> k in s
+}
 
 // Find the smallest natural number (v) that is not present 
 // in a sorted list (s) of natural numbers.
@@ -25,13 +29,6 @@ method SmallestMissingNumber(s: seq<nat>) returns (v: nat)
     // ensures: k in s[..i] ==> k in s (to ensure post-cond)
 }
 
-// Auxiliary predicate that checks if 'v' is the smallest natural number that 
-// is not present in a sorted sequence (s) of natural numbers.
-predicate IsSmallestMissingNumber(s: seq<nat>, v: nat)
-    requires forall i, j :: 0 <= i < j < |s| ==> s[i] <= s[j]
-{
-    v !in s && forall k : nat :: k < v ==> k in s
-}
 
 // Test cases checked statically.
 method SmallestMissingNumberTest() {
