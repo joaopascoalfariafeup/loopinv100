@@ -5,7 +5,8 @@
 type T = int // for demo purposes, but could be another type 
 
 // Checks if a sequence 's' is sorted.
-predicate isSorted(a: seq<T>) {
+ghost predicate isSorted(a: seq<T>) 
+{
   forall i, j :: 0 <= i < j < |a| ==> a[i] <= a[j]
 }
   
@@ -33,7 +34,18 @@ method BinarySearch(a: array<T>, x: T) returns (index: int)
 method testBinarySearch() {
   var a := new int[5] [1, 4, 4, 6, 8];
   assert a[..] == [1, 4, 4, 6, 8]; // helper (for cases of value found)
-  var id1 := BinarySearch(a, 1); assert id1 == 0; // found
-  var id2 := BinarySearch(a, 3); assert id2 == -1; // not found
-  var id3 := BinarySearch(a, 4); assert id3 in {1, 2}; // duplicate
+  
+  // found case
+  var id1 := BinarySearch(a, 1); 
+  assert a[0] == 1; // helper 
+  assert id1 == 0;
+  
+  // not found case
+  var id2 := BinarySearch(a, 3); 
+  assert id2 == -1; 
+  
+  // duplicate case
+  var id3 := BinarySearch(a, 4); 
+  assert a[1] == 4 && a[2] == 4; // helper 
+  assert id3 in {1, 2}; // duplicate
 } 

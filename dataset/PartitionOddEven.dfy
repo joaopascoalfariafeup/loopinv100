@@ -1,5 +1,6 @@
 // Rearranges the elements in an array 'a' of natural numbers,
 // so that all odd numbers appear before all even numbers.
+// That is, there is no even number preceding an odd number. 
 method PartitionOddEven(a: array<nat>) 
   modifies a
   ensures multiset(a[..]) == multiset(old(a[..]))

@@ -1,10 +1,6 @@
 // Checks if a natural number is a perfect square.
-ghost predicate isPerfectSquare(n: nat) {
-     exists i : nat ::  i * i == n
-}
-
 method  IsPerfectSquare(n: nat) returns(result: bool)
-  ensures result == isPerfectSquare(n)
+  ensures result <==> exists i : nat ::  i * i == n
 {
     var i := 0;
     while i * i < n
@@ -14,13 +10,9 @@ method  IsPerfectSquare(n: nat) returns(result: bool)
         i := i + 1;
     }
 
-    // Proof helper
-    forall j: nat 
-        ensures j > i ==> j * j > i * i
-    {}
-
     return i * i == n;
 }
+
 
 // Test cases checked statically
 method IsPerfectSquareTest(){

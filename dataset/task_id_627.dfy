@@ -1,11 +1,11 @@
 // Auxiliary predicate that checks if 'v' is the smallest natural number that 
 // is not present in a sequence (s) of natural numbers.
-predicate IsSmallestMissingNumber(s: seq<nat>, v: nat) {
+ghost predicate IsSmallestMissingNumber(s: seq<nat>, v: nat) {
     v !in s && forall k : nat :: k < v ==> k in s
 }
 
-// Find the smallest natural number (v) that is not present 
-// in a sorted list (s) of natural numbers.
+// Given a sorted sequence 's' of natural numbers,
+// finds the smallest natural number 'v that is not present in the sequence. 
 method SmallestMissingNumber(s: seq<nat>) returns (v: nat)
     requires forall i, j :: 0 <= i < j < |s| ==> s[i] <= s[j]
     ensures IsSmallestMissingNumber(s, v) 

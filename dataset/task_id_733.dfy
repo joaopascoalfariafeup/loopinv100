@@ -2,9 +2,8 @@
 // If the target is not in the array, returns -1.
 method FindFirstOccurrence(arr: array<int>, target: int) returns (index: int)
     requires forall i, j :: 0 <= i < j < arr.Length ==> arr[i] <= arr[j]
-    ensures if target !in arr[..] then index == -1
-            else 0 <= index < arr.Length && arr[index] == target
-                            && target !in arr[..index]
+    ensures target !in arr[..] ==> index == -1 
+    ensures target in arr[..] ==> 0 <= index < arr.Length && arr[index] == target && target !in arr[..index]
 {
     for i := 0 to arr.Length
         invariant target !in arr[..i]

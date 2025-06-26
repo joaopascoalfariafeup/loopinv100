@@ -1,5 +1,5 @@
 // Auxiliary predicate that checks if a sequence 'a' are sorted.
-predicate isSorted(a: seq<int>) {
+ghost predicate isSorted(a: seq<int>) {
   forall i, j :: 0 <= i < j < |a| ==> a[i] <= a[j]
   
 }

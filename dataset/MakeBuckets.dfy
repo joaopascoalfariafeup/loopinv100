@@ -1,4 +1,4 @@
-type T = nat 
+type T = nat
 
 // Given a non-empty array 'a' of natural numbers, generates a new array ‘b’ 
 // (buckets) such that b[k] gives the number of occurrences of 'k' in 'a',
@@ -6,12 +6,20 @@ type T = nat
 method MakeBuckets(a: array<nat>) returns(b: array<nat>)
   requires a.Length > 0
   ensures fresh(b) 
-  ensures b.Length  == max(a[..]) + 1
+  ensures b.Length > 0 && b.Length == max(a[..]) + 1
   ensures forall k :: 0 <= k < b.Length ==> b[k] == count(k, a[..])
 {
-   var max := max(a[..]);
-   b := new T[1 + max];
-   forall k | 0 <= k <= max {
+   var m := a[0];
+   for i := 1 to a.Length
+     invariant m == max(a[..i])
+   {
+      if a[i] > m {
+         m := a[i];
+      }
+   } 
+
+   b := new nat[1 + m];
+   forall k | 0 <= k <= m {
      b[k] := 0;
    }
    assert a[..] == old(a[..]); // proof helper
@@ -23,23 +31,17 @@ method MakeBuckets(a: array<nat>) returns(b: array<nat>)
    assert a[..] == a[..a.Length]; // proof helper
 }
 
-// Finds the maximum value in a non-empty sequence.
-function max(s: seq<nat>) : nat
-  requires |s| > 0 
-  ensures isMax(max(s), s)
+// Gets the maximum value in a non-empty sequence 's'.
+ghost function max(s: seq<T>) : (result: T) 
+  requires |s| > 0
+  ensures result in s && forall k :: 0 <= k < |s| ==> result >= s[k]
 {
-  if |s| == 1 then s[0]
-  else (var m := max(s[1..]); if m > s[0] then m else s[0])
+   if |s| == 1 then s[0] else if s[0] > max(s[1..]) then s[0] else max(s[1..])
 }
 
-// Checks if 'x' is a maximum in sequence 's'
-predicate isMax(x: T, s: seq<T>) {
-  (exists k :: 0 <= k < |s| && x == s[k])
-  && (forall k :: 0 <= k < |s| ==> x >= s[k])
-}
-
-// Counts the number of occurrences of 'x' in sequence 's'
-function count(x: T, s: seq<T>) : nat {
+// Counts the number of occurrences of 'x' in a sequence 's'.
+ghost function count(x: T, s: seq<T>) : nat 
+{
    multiset(s)[x]
 }
 

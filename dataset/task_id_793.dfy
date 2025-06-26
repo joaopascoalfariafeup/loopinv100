@@ -1,9 +1,9 @@
-// Determines the last position of an element in a sorted array.
+// Determines the last position of an element 'elem' in a sorted array 'arr'.
 // If the element is not in the array, the method returns -1.
 method LastPosition(arr: array<int>, elem: int) returns (pos: int)
     requires forall i, j :: 0 <= i < j < arr.Length ==> arr[i] <= arr[j]
-    ensures if elem !in arr[..] then pos == -1 
-            else 0 <= pos < arr.Length && arr[pos] == elem && elem !in arr[pos+1..]
+    ensures elem !in arr[..] ==> pos == -1 
+    ensures elem in arr[..] ==> 0 <= pos < arr.Length && arr[pos] == elem && elem !in arr[pos+1..]
 {
     // Scan from the end of the array to the begin of the array.
     var i := arr.Length - 1;

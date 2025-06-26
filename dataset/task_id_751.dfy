@@ -1,12 +1,12 @@
 // Check if an array of integers represents a min heap.
 method IsMinHeap(a: array<int>) returns (result: bool)
-  ensures result <==> forall i :: 1 <= i < a.Length ==> a[parent(i)] <= a[i]
+  ensures result <==> forall i :: 1 <= i < a.Length ==> a[Parent(i)] <= a[i]
 {
   if a.Length > 0 {
     for i := 1 to a.Length 
-      invariant forall k :: 1 <= k < i ==> a[parent(k)] <= a[k]
+      invariant forall k :: 1 <= k < i ==> a[Parent(k)] <= a[k]
     {
-      if a[parent(i)] > a[i] {
+      if a[Parent(i)] > a[i] {
         return false;
       }
     }
@@ -14,8 +14,8 @@ method IsMinHeap(a: array<int>) returns (result: bool)
   return true;
 }
 
-// Auxiliary function that gives the parent index of a node in a heap.
-function parent(i: nat): nat
+// Auxiliary function that gives the parent index of a non-root node (with index > 0) in a heap.
+function Parent(i: nat): nat
   requires i > 0
 { (i-1)/2 }
 
@@ -34,6 +34,6 @@ method IsMinHeapTest(){
   // Not partially sorted
   var a3:= new int[] [2, 10, 4, 5, 3, 15];
   var res3 := IsMinHeap(a3);
-  assert parent(3) == 1 && a3[1] > a3[3]; // proof helper (counter-example)
+  assert Parent(3) == 1 && a3[1] > a3[3]; // proof helper (counter-example)
   assert !res3;
 }

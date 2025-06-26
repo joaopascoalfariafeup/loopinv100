@@ -2,19 +2,19 @@
 method ExtractRearChars(l: seq<string>) returns (r: seq<char>)
   requires forall i :: 0 <= i < |l| ==> |l[i]| > 0
   ensures |r| == |l|
-  ensures forall i :: 0 <= i < |l| ==> r[i] == last(l[i])
+  ensures forall i :: 0 <= i < |l| ==> r[i] == Last(l[i])
 {
   r := [];
   for i := 0 to |l|
     invariant |r| == i
-    invariant forall k :: 0 <= k < i ==> r[k] == last(l[k])
+    invariant forall k :: 0 <= k < i ==> r[k] == Last(l[k])
   {
-    r := r + [last(l[i])];
+    r := r + [Last(l[i])];
   }
 }
 
 // Auxiliary function to get the last element of a non-empty sequence.
-function last<T>(s: seq<T>): T
+function Last<T>(s: seq<T>): T
   requires |s| > 0
 {
   s[|s| - 1]

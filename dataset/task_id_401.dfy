@@ -19,7 +19,7 @@ method DeepElementWiseAddition(a: seq<seq<int>>, b: seq<seq<int>>) returns (resu
 ghost predicate IsElementWiseAddition(a: seq<int>, b: seq<int>, c: seq<int>)
   requires |a| == |b|
 {
-  |c| == |a| && forall i :: 0 <= i < |a| ==> c[i] == a[i] + b[i]
+  |c| == |a| == |b| && forall i :: 0 <= i < |a| ==> c[i] == a[i] + b[i]
 }
 
 // Auxiliary method to compute the element wise addition of two sequences of equal size.

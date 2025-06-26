@@ -16,22 +16,22 @@ method SmallestListLength<T>(s: seq<seq<T>>) returns (v: int)
 }
 
 method SmallestListLengthTest(){
-  var s1:seq<seq<int>> :=[[1],[1,2]];
+  var s1:seq<seq<int>> := [[1],[1,2]];
   var res1 := SmallestListLength(s1);
-  assert |s1[0]|==1;
-  assert |s1[1]|==2;
+  assert |s1[0]| == 1;
+  assert |s1[1]| == 2;
   assert res1 == 1;
 
-  var s2:seq<seq<int>> :=[[1,2],[1,2,3],[1,2,3,4]];
+  var s2:seq<seq<int>> := [[1,2],[1,2,3],[1,2,3,4]];
   var res2:=SmallestListLength(s2);
-  assert |s2[0]|==2;
-  assert |s2[1]|==3;
-  assert |s2[2]|==4;
-  assert res2==2;
+  assert |s2[0]| == 2;
+  assert |s2[1]| == 3;
+  assert |s2[2]| == 4;
+  assert res2 == 2;
 
-  var s3:seq<seq<int>> :=[[3,3,3],[4,4,4,4]];
+  var s3:seq<seq<int>> := [[3,3,3],[4,4,4,4]];
   var res3:=SmallestListLength(s3);
-  assert |s3[0]|==3;
-  assert |s3[1]|==4;
-  assert res3 ==3 ;
+  assert |s3[0]| == 3;
+  assert |s3[1]| == 4;
+  assert res3 == 3 ;
 }

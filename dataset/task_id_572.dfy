@@ -17,7 +17,7 @@ method RemoveDuplicates<T(==)>(a: array<T>)  returns (res: seq<T>)
 
 // Returns a sequence with all the duplicates removed from the input sequence
 // (keeping the first occurrence of each element).
-function {:fuel 4}DeDup<T(==)>(s: seq<T>): (result: seq<T>)
+ghost function {:fuel 4}DeDup<T(==)>(s: seq<T>): (result: seq<T>)
 {
   if |s| <= 1 then s
   else if Last(s) in DropLast(s) then DeDup(DropLast(s))
@@ -25,14 +25,14 @@ function {:fuel 4}DeDup<T(==)>(s: seq<T>): (result: seq<T>)
 }
 
 // Auxiliary function that gives the last element of a non-empty sequence
-function Last<T>(a: seq<T>): T
+ghost function Last<T>(a: seq<T>): T
   requires |a| > 0
 {
   a[|a| - 1]
 }
 
 // Auxiliary function that gives a sequence without the last element.
-function DropLast<T>(a: seq<T>): seq<T>
+ghost function DropLast<T>(a: seq<T>): seq<T>
   requires |a| > 0
 {
   a[0..|a| - 1]

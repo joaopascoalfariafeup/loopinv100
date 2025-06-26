@@ -14,7 +14,7 @@ method FindSmallest(s: array<int>) returns (min: int)
 }
 
 // Auxiliary (reusable) predicate to check the minimum of a sequence.
-predicate isMin(s: seq<int>, x: int) {
+ghost predicate isMin(s: seq<int>, x: int) {
   (x in s) && (forall k :: 0 <= k < |s| ==> x <= s[k])
 }
 

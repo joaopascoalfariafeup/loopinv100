@@ -1,8 +1,13 @@
-// Returns the sum of the decimal digits of a natural number.
-function SumOfDigits(n: nat) : (sum: nat) { // recursive definition
-    if n < 10 then n else SumOfDigits(n / 10) + n % 10
+// Recursive definition of the sum of the decimal digits of a natural number n.
+ghost function SumOfDigits(n: nat) : (sum: nat) 
+{ 
+    if n > 0 then SumOfDigits(n / 10) + n % 10 else 0
 }
-by method // iterative implementation
+
+// Computes the sum of the decimal digits of a natural number n.
+method CalcSumOfDigits(n: nat) returns (sum: nat)
+    ensures sum == SumOfDigits(n)
+    requires n >= 0
 {
     sum := 0; // partial sum
     var num : nat := n; // remaining number
@@ -16,9 +21,14 @@ by method // iterative implementation
 
 // Test cases checked statically by Dafny.
 method SumOfDigitsTest() {
-    assert SumOfDigits(0) == 0;
-    assert SumOfDigits(9) == 9;
-    assert SumOfDigits(10) == 1;
-    assert SumOfDigits(99) == 18;
-    assert SumOfDigits(111111111) == 9;
+    var s1 := CalcSumOfDigits(0);
+    assert s1 == 0;
+    var s2 := CalcSumOfDigits(9);
+    assert s2 == 9;
+    var s3 := CalcSumOfDigits(10);
+    assert s3 == 1;
+    var s4 := CalcSumOfDigits(99);
+    assert s4 == 18;
+    var s5 := CalcSumOfDigits(111111111);
+    assert s5 == 9;
 }

@@ -16,10 +16,14 @@ method ContainsZ(s: string) returns (result: bool)
 
 // Teste cases checked statically
 method ContainsZTest() {
-  var out1 := ContainsZ("pythonz");
+  var s1 := "pythonz";
+  var out1 := ContainsZ(s1);
+  assert s1[6] == 'z';
   assert out1;
 
-  var out2 := ContainsZ("XYZ.");
+  var s2 := "XYZ.";
+  var out2 := ContainsZ(s2);
+  assert s2[2] == 'Z';
   assert out2;
 
   var out3 := ContainsZ("  lang  .");

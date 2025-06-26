@@ -13,9 +13,11 @@ method Contains<T(==)>(s: seq<T>, x: T) returns (result: bool)
   return false;
 }
 
+// Test cases checked statically
 method ContainsTest(){
   var s1: seq<int> := [10, 4, 5, 6, 8];
   var res1 := Contains(s1,6);
+  assert s1[3] == 6; // proof helper
   assert res1;
 
   var s2: seq<int> := [1, 2, 3, 4, 5, 6];
@@ -24,6 +26,7 @@ method ContainsTest(){
 
   var s3: seq<char> := ['a', 'c', 'd'];
   var res3:=Contains(s3, 'c');
+  assert s3[1] == 'c'; // proof helper
   assert res3;
 }
 

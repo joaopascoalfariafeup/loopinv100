@@ -6,7 +6,7 @@ method SumOfCommonDivisors(a: nat, b: nat) returns (sum: nat)
   sum := 0; // sum of the common divisors so far
   ghost var divisors : seq<int> := []; // keeps track of the common divisors so far (ghost)
   var i: nat := 1;
-  while i <= min(a, b)
+  while i <= a && i <= b
     invariant 1 <= i <= min(a, b) + 1
     invariant divisors == commonDivisors(a, b, i - 1)
     invariant sum == sumSeq(divisors)
@@ -30,7 +30,7 @@ ghost function {:fuel 4} commonDivisors(a: nat, b: nat, d: nat := min(a, b)): se
 }
 
 // Retrieves the minimum of two integers
-function min(a: int, b: int): int {
+ghost function min(a: int, b: int): int {
   if a < b then a else b
 }
 // Checks if 'd' is a common divisor of 'a' and 'b'

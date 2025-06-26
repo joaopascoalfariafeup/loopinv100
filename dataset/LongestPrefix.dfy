@@ -19,6 +19,6 @@ method testLongestPrefix() {
     var a := new int[] [1, 3, 2, 4, 8];
     var b := new int[] [1, 3, 3, 4];
     var i := LengthOfLongestPrefix(a, b);
-    assert a[2] != b[2]; // to help Dafny prove next assertion    
+    assert a[2] != b[2]; // helper 
     assert i == 2; 
 }

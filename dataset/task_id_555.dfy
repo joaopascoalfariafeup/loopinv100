@@ -5,37 +5,36 @@ method DifferenceSumCubesAndSumNumbers(n: nat) returns (diff: int)
 {
   var sumCubes := SumCubes(n);
   var sumNumbers := SumNumbers(n);
-  return sumCubes - sumNumbers;
+  return sumCubes as int - sumNumbers as int; //added 'as int' to convert nat to int
 }
 
-
 // Computes  the sum of the cubes of the first n positive natural numbers.
-method SumCubes(n: nat) returns (sumCubes: nat)
-  ensures sumCubes == (n * n * (n + 1) * (n + 1)) / 4
+method SumCubes(n: nat) returns (s: nat)
+  ensures s == (n * n * (n + 1) * (n + 1)) / 4
 {
-  sumCubes := 0;
+  s := 0;
   var i := 0;
   while i < n
     invariant 0 <= i <= n
-    invariant sumCubes == i * i * (i + 1) * (i + 1) / 4
+    invariant s == i * i * (i + 1) * (i + 1) / 4
   {
     i := i + 1;
-    sumCubes := sumCubes + i * i * i;
+    s := s + i * i * i;
   }
 }
 
 // Computes the sum of the first n positive natural numbers.
-method SumNumbers(n: nat) returns (sumNumbers: nat)
-  ensures sumNumbers == (n * (n + 1)) / 2
+method SumNumbers(n: nat) returns (s: nat)
+  ensures s == (n * (n + 1)) / 2
 {
-  sumNumbers := 0;
+  s := 0;
   var i : nat := 0;
   while i < n
     invariant 0 <= i <= n
-    invariant sumNumbers == i * (i + 1) / 2
+    invariant s == i * (i + 1) / 2
   {
     i := i + 1;
-    sumNumbers := sumNumbers + i;
+    s := s + i;
   }
 }
 

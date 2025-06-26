@@ -4,25 +4,26 @@
 */
 
 // Initial recursive definition of C(n, k), based on the Pascal equality.
-function Comb(n: nat, k: nat): nat 
+ghost function Comb(n: nat, k: nat): nat 
   requires 0 <= k <= n
 {
   if k == 0 || k == n then 1 else Comb(n-1, k) + Comb(n-1, k-1)  
 }
-// Iterative implementation in time O(k*(n-k)) and space O(n-k), using dynamic programming.
-by method
+
+// Iterative calcultion of C(n, k) in time O(k*(n-k)) and space O(n-k), using dynamic programming.
+method CalcComb(n: nat, k: nat) returns (res: nat) 
+  requires 0 <= k <= n
+  ensures res == Comb(n, k)
 {
   var maxj := n - k;
-  var c := new nat[1 + maxj];
-  // Start with the values (1) in the first ascending diagonal of the Pascal triangle
-  for j := 0 to maxj + 1
-    invariant forall k :: 0 <= k < j ==> c[k] == Comb(j, 0)
-  {
+  var c := new nat[maxj + 1]; // contains the values of the ascending diagonal in the Pascal triangle
+
+  // Initialize the left-most ascending diagonal of the Pascal triangle
+  forall  j | 0 <= j <= maxj {
        c[j] := 1; // Comb(j, 0)
   }
 
-  // At the begin of each iteration 'i', C[k] contains the value of Comb(k+i-1, i-1)
-  // (an ascending diagonal in the Pascal triangle)
+  // At the begin of each iteration 'i', c[k] contains Comb(k + i - 1, i - 1)
   for i := 1 to k + 1 
     invariant forall j :: 0 <= j <= maxj ==> c[j] == Comb(j + i - 1, i - 1)
   {
@@ -42,14 +43,14 @@ by method
 
 
 // Test cases checked statically and dynamically  
-method Main() {
+method Main() 
+{
   // Checked statically
-  assert Comb(5, 0) == 1;
-  assert Comb(5, 2) == 10;
-  assert Comb(5, 5) == 1;
+  var c1 := CalcComb(5, 0); assert c1 == 1;
+  var c2 := CalcComb(5, 2); assert c2 == 10;
+  var c3 := CalcComb(5, 5); assert c3 == 1;
 
   // Checked dynamically
-  expect Comb(40, 10) == 847660528;
+  var c4 := CalcComb(40, 10);
+  expect c4 == 847660528;
 }
-
-

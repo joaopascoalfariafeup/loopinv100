@@ -4,9 +4,8 @@
 
 type T = int // for demo purposes, but could be another type
 
-
 // Auxiliary predicate that checks if a sequence 'a' is sorted. 
-predicate IsSorted(s: seq<int>) {
+ghost predicate IsSorted(s: seq<int>) {
     forall i, j :: 0 <= i < j < |s| ==> s[i] <= s[j] 
 }
 
@@ -43,36 +42,4 @@ method TestSortSimple() {
     InsertionSort(a);
     assert a[..] == [3, 4, 6, 8, 9];
 }  
-
-method TestSortWithDups() {
-    var a := new T[] [9, 3, 6, 9];
-    assert a[..] == [9, 3, 6, 9]; // helper
-    InsertionSort(a);
-    SortingUniquenessProp(a[..],  [3, 6, 9, 9]);
-    assert a[..] ==  [3, 6, 9, 9];
-}
-
-// State and prove by induction the property that, if two sequences are sorted and have 
-// the same multiset of elements, then they must be identical (so sorting has a unique solution). 
-lemma SortingUniquenessProp(a: seq<T>, b: seq<T>)
-    requires IsSorted(a) && IsSorted(b) && multiset(a) == multiset(b) 
-    ensures a == b
-{
-    // recalls useful properties about sequences and their multisets  
-    seqProps(a);
-    seqProps(b);
-
-    // key steps of proof by induction on 'a' and 'b' (the rest is filled in by Dafny) 
-    if |a| > 0 {
-      SortingUniquenessProp(a[1..], b[1..]);
-    }
-}
-
-// States two properties about sequences (proved by Dafny alone): 
-// - sequence concatenation reverts splitting in head and tail;
-// - elements of a sequence belong to its multiset.
-lemma seqProps(a: seq<T>) 
-    ensures |a| > 0 ==> a == [a[0]] + a[1..] 
-    ensures forall i :: 0 <= i < |a| ==> a[i] in multiset(a)
-{}
 

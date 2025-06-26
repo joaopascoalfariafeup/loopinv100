@@ -21,7 +21,7 @@ method IsPrimeTest(){
  
     // non-prime number
     var out2 := IsPrime(1010);
-    assert 1010 % 2 == 0; // proof helper (counterexample)
+    assert 1010 % 2 == 0; // proof helper (counter example)
     assert !out2;
 
     // large prime number

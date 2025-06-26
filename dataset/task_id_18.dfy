@@ -1,10 +1,10 @@
-// Remove from the first string all characters which are present in the second string
+// Remove from the first string all characters which are present in the second string.
 method RemoveChars(s1: string, s2: string) returns (v: string)
-  ensures v == filter(s1, c => !(c in s2))
+  ensures v == Filter(s1, c => !(c in s2))
 {
   v := [];
   for i := 0 to |s1|
-    invariant v == filter(s1[..i], c => !(c in s2))
+    invariant v == Filter(s1[..i], c => !(c in s2))
   {
     if !(s1[i] in s2) {
       v := v + [s1[i]];
@@ -18,21 +18,21 @@ method RemoveChars(s1: string, s2: string) returns (v: string)
 
 // Filters a sequence using a predicate.
 // Returns a new sequence with the elements of s that satisfy the predicate p.
-function filter<T>(s: seq<T>, p: T -> bool): (r : seq<T>)
-    ensures |r| <= |s| // useful sometimes    
+ghost function Filter<T>(s: seq<T>, p: T -> bool): (r : seq<T>)
+    ensures |r| <= |s|
 {
-    if |s| == 0 then s
-    else if p(last(s)) then filter(butlast(s), p) + [last(s)]
-    else filter(butlast(s), p)
+    if |s| == 0 then []
+    else if p(Last(s)) then Filter(DropLast(s), p) + [Last(s)]
+    else Filter(DropLast(s), p)
 }
 
 // Retrieves the same sequence with the last element removed 
-function  butlast<T>(s: seq<T>): seq<T>
+ghost function  DropLast<T>(s: seq<T>): seq<T>
   requires |s| > 0
 { s[..|s|-1] }
 
 // Retrieves the last element of a non-empty sequence
-function  last<T>(s: seq<T>): T
+ghost function  Last<T>(s: seq<T>): T
   requires |s| > 0
 { s[|s|-1] }
 

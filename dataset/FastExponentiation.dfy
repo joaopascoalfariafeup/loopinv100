@@ -19,7 +19,7 @@ method FastExponentiation(x: real, n: nat) returns (p: real)
 }
 
 // Recursive definiton of x^n.
-function Power(x: real, n: nat) : (p: real) {
+ghost function Power(x: real, n: nat) : (p: real) {
     if n == 0 then 1.0 else x * Power(x, n-1)
 }
 

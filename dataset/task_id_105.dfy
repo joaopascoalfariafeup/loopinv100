@@ -1,30 +1,31 @@
-// Counts the number of true values in the first 'n' positions of a boolean array 'a'.
-// Recursive definition and iterative implementation.
-function {:fuel 3} CountTrue(a: array<bool>, n: nat := a.Length): (result: nat)
-  requires 0 <= n <= a.Length
-  reads a
+// Counts the number of true values in a boolean array 'a'.
+method CalcCountTrue(a: array<bool>) returns (count: nat)
+  ensures count == multiset(a[..])[true]
 {
-  if n == 0 then 0 else CountTrue(a, n-1) + (if a[n-1] then 1 else 0)
-}
-by method
-{
-  result := 0;
-  for i := 0 to n
-    invariant result == CountTrue(a, i)
+  count := 0;
+  for i := 0 to a.Length
+    invariant count == multiset(a[..i])[true]
   {
     if a[i] {
-      result := result + 1;
+      count := count + 1;
     }
   }
+  assert a[..] == a[..a.Length]; // proof helper
 }
 
+// Test cases checked statically.
 method CountTrueTest(){
   var a1 := new bool[] [true, false, true];
-  assert CountTrue(a1) == 2;
+  assert a1[..] == [true, false, true]; // proof helper
+  var c1 := CalcCountTrue(a1);
+  assert c1 == 2;
  
   var a2 := new bool[] [false, false];
-  assert CountTrue(a2) == 0;
+  var c2 := CalcCountTrue(a2);
+  assert c2 == 0;
 
   var a3 := new bool[] [true, true, true];
-  assert CountTrue(a3) == 3;
+  assert a3[..] == [true, true, true]; // proof helper
+  var c3 := CalcCountTrue(a3);
+  assert c3 == 3;
 }

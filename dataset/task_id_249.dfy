@@ -1,13 +1,10 @@
 // Returns a sequence with elements that belong to both arrays, without duplicates.
 // The result follows the ordering of elements in a.
-// In case of duplicates, it is keep an arbitrary occurrence. 
+// In case of duplicates, it is kept an arbitrary occurrence. 
 method Intersection<T(==)>(a: array<T>, b: array<T>) returns (res: seq<T>)
-  // All elements in the output are in both a and b, and vice-versa
-  ensures forall x :: x in res <==> x in a[..] && x in b[..]
-  // The elements in the output are all different
-  ensures forall i, j :: 0 <= i < j < |res| ==> res[i] != res[j]
-  // The result follows the ordering of elements in a
-  ensures IsSubsequence(res, a[..])
+  ensures forall x :: x in res <==> x in a[..] && x in b[..]   // All elements in the output are in both a and b, and vice-versa
+  ensures forall i, j :: 0 <= i < j < |res| ==> res[i] != res[j] // The elements in the output are all different
+  ensures IsSubsequence(res, a[..]) // The result follows the ordering of elements in a
 {
   res := [];
   for i := 0 to a.Length
@@ -23,13 +20,13 @@ method Intersection<T(==)>(a: array<T>, b: array<T>) returns (res: seq<T>)
 
 // Auxiliary predicate that checks if 'a' is a subsequence of 'b' 
 // (not necessarily consecutive)
-predicate IsSubsequence<T(==)>(a: seq<T>, b: seq<T>)  {
+ghost predicate IsSubsequence<T(==)>(a: seq<T>, b: seq<T>)  {
     (forall i :: 0 <= i < |a| ==> a[i] in b)
     && (forall i, j :: 0 <= i < j < |a| ==> containsInOrder(b, a[i], a[j]))
 }
 
 // Auxiliary predicate that checks if sequence 'a' contains 'x' before 'y'
-predicate containsInOrder<T(==)>(a: seq<T>, x: T, y: T) {
+ghost predicate containsInOrder<T(==)>(a: seq<T>, x: T, y: T) {
   exists i, j :: 0 <= i < j < |a| && a[i] == x && a[j] == y
 }
 

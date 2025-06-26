@@ -3,7 +3,8 @@ predicate IsDigit(c: char) {
   '0' <= c <= '9'
 }
 
-// Checks if a string represents an unsigned integer.
+// Checks if a string represents an unsigned integer, that is, a sequence
+// of one or more decimal digits.
 method IsInteger(s: string) returns (result: bool)
   ensures result <==> |s| > 0 && (forall i :: 0 <= i < |s| ==> IsDigit(s[i]))
 {

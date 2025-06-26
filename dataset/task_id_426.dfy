@@ -20,25 +20,12 @@ predicate IsOdd(n: int) {
 }
 
 // Select from a sequence 'a' the elements that satisfy a predicate 'p'.
-function {:fuel 4} Filter<T(==)>(a: seq<T>, p: (T) -> bool): seq<T> {
+ghost function {:fuel 4} Filter<T>(a: seq<T>, p: (T) -> bool): seq<T> {
   if |a| == 0 then []
-  else if p(Last(a)) then Filter(DropLast(a), p) + [Last(a)]
-  else Filter(DropLast(a), p)
+  else if p(a[|a|-1]) then Filter(a[..|a|-1], p) + [a[|a|-1]]
+  else Filter(a[..|a|-1], p)
 }
 
-// Auxiliary function that gives the last element of a non-empty sequence
-function {:fuel 2} Last<T>(a: seq<T>): T
-  requires |a| > 0
-{
-  a[|a| - 1]
-}
-
-// Auxiliary function that gives a sequence without the last element.
-function {:fuel 2} DropLast<T>(a: seq<T>): seq<T>
-  requires |a| > 0
-{
-  a[0..|a| - 1]
-}
 
 // Test cases checked statically.
 method FilterOddNumbersTest(){

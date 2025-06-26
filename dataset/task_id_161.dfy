@@ -19,19 +19,19 @@ method RemoveElements<T(==)>(a: array<T>, b: array<T>) returns (res: seq<T>)
 // Auxiliary function, defined recursively, that returns a sequence with all 
 // elements belonging to 'a' that are not in 'b', by the same order, 
 // without duplicates (keeping only the first occurrence).
-function {:fuel 6} removeElems<T(==)>(a: seq<T>, b: seq<T>): seq<T> {
+ghost function {:fuel 6} removeElems<T(==)>(a: seq<T>, b: seq<T>): seq<T> {
   if |a| == 0 then []
   else if Last(a) !in b && Last(a) !in DropLast(a) then removeElems(DropLast(a), b) + [Last(a)]
   else removeElems(DropLast(a), b)
 }
 
 // Retrieves the same sequence with the last element removed 
-function DropLast<T>(s: seq<T>): seq<T>
+ghost function DropLast<T>(s: seq<T>): seq<T>
   requires |s| > 0
 { s[..|s|-1] }
 
 // Retrieves the last element of a non-empty sequence
-function Last<T>(s: seq<T>): T
+ghost function Last<T>(s: seq<T>): T
   requires |s| > 0
 { s[|s|-1] }
 

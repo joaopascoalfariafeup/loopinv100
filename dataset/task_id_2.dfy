@@ -13,7 +13,7 @@ method SharedElements<T(==)>(a: array<T>, b: array<T>) returns (result: set<T>)
 }
 
 // Auxiliary function that returns the set of elements (without duplicates) in a sequence.
-function elems<T>(s: seq<T>) : set<T> {
+ghost function elems<T>(s: seq<T>) : set<T> {
   set x | x in s
 }
 

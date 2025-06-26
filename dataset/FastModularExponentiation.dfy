@@ -4,13 +4,10 @@
 * It is based on the fast exponentiation algorithm.
 */
 
-// Recursive definition of x^n.
-function Power(x: nat, n: nat) : (p: nat) {
-    if n == 0 then 1 else x * Power(x, n-1)
-}
-// Iterative computation of x^n in time O(log n) by
-// the fast exponentiation algorithm.
-by method
+// Computes x^n in time O(log n) and space O(1) 
+// using the fast exponentiation algorithm.
+method FastExponentiation(x: nat, n: nat) returns (p: nat)
+  ensures p == Power(x, n)
 {
     var mx: nat  := x; // remaining base
     var mn: nat := n; // remaining exponent
@@ -27,16 +24,22 @@ by method
     }
 }
 
-// Definition of x^n mod m, with m > 1.
-function PowerMod(x: nat, n: nat, m: nat) : (res: nat) 
-  requires m > 1
+// Recursive definition of x^n.
+ghost function Power(x: nat, n: nat) : (p: nat) 
 {
-    Power(x, n) % m
+    if n == 0 then 1 else x * Power(x, n-1)
 }
-// Iterative computation of x^n mod m in time O(log n) by the 
-// fast modular exponentiation algorithm, avoiding overflows.
-by method
+
+// Iterative computation of x^n mod m in time O(log n), 
+// by the fast modular exponentiation algorithm, avoiding overflows.
+method FastModularExponentiation(x: nat, n: nat, m: nat) returns (res: nat) 
+    requires m > 0
+    ensures res == Power(x, n) % m
 {
+    if m == 1 {
+        return 0; // x^n % 1 == 0
+    }
+
     var mn: nat := n; // remaining exponent
 
     ghost var mx: nat := x; // remaining base for computing Power(x, n) (ghost)
@@ -65,12 +68,12 @@ by method
     return p2;
 }
 
-// Proves (automatically) that x^(2n) = (x^2)^n.
+// State and prove (automatically) the property: x^(2n) = (x^2)^n.
 lemma {:induction n} PowerLemma(x: nat, n: nat) 
   ensures Power(x, 2 * n) == Power(x * x, n) 
 {}
 
-// Prove that (a * b) % m == ((a % m) * (b % m)) % m, with m > 0
+// State and prove the property: (a * b) % m == ((a % m) * (b % m)) % m, with m > 0
 lemma ModLemma(a: nat, b: nat, m: nat)
   requires m > 0
   ensures (a * b) % m == ((a % m) * (b % m)) % m
@@ -89,7 +92,7 @@ lemma ModLemma(a: nat, b: nat, m: nat)
     ModLemma2(q, r, m); // ==> (a * b) % m == (q * m + r) % m == r % m
  }
 
-// Proves that (q * m + r) % m == r % m, with m > 0.
+// State and prove the property: (q * m + r) % m == r % m, with m > 0.
 lemma ModLemma2(q: nat, r: nat, m: nat)
   requires m > 0
   ensures (q * m + r) % m == r % m
@@ -114,9 +117,18 @@ lemma ProdLemma(a: int, b: nat)
 
 // A few test cases (checked statically by Dafny).
 method TestModularExponentiation() {
-    assert Power(2, 10) == 1024;
-    assert PowerMod(2, 10, 7) == 2;
+    var p1 := FastExponentiation(2, 10);
+    assert p1 == 1024;
 
-    assert Power(10, 6) == 1000000;
-    assert PowerMod(10, 6, 9) == 1;
+    var p2 := FastModularExponentiation(2, 10, 7);
+    assert p2 == 2;
+
+    var p3 := FastExponentiation(10, 6);
+    assert p3 == 1000000;
+
+    var p4 := FastModularExponentiation(10, 6, 9);
+    assert p4 == 1;
+
+    var p5 := FastModularExponentiation(1000, 1000, 1);
+    assert p5 == 0;
 }

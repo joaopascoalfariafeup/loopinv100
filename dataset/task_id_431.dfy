@@ -1,7 +1,6 @@
 // Checks if two arrays have a common element.
 method HasCommonElement<T(==)>(a: array<T>, b: array<T>) returns (result: bool)
-    ensures result <==> exists i, j :: 0 <= i < a.Length 
-                               && 0 <= j < b.Length && a[i] == b[j]
+    ensures result <==> exists i, j :: 0 <= i < a.Length && 0 <= j < b.Length && a[i] == b[j]
 {
     result := false;
     for i := 0 to a.Length

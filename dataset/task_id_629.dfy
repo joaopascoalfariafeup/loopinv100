@@ -1,4 +1,4 @@
-// Finds even numbers from an array of integers.
+// Retrives the sequence of even numbers from an array of integers.
 method FindEvenNumbers(arr: array<int>) returns (evenList: seq<int>)
     ensures evenList == Filter(arr[..], IsEven)
 {
@@ -15,7 +15,7 @@ method FindEvenNumbers(arr: array<int>) returns (evenList: seq<int>)
 }
 
 // Selects from a sequence the elements that satisfy a predicate.
-function {:fuel 5} Filter<T>(s: seq<T>, p: T -> bool) : seq<T> {
+ghost function {:fuel 5} Filter<T>(s: seq<T>, p: T -> bool) : seq<T> {
     if |s| == 0 then []
     else if p(Last(s)) then Filter(DropLast(s), p) + [Last(s)]
     else Filter(DropLast(s), p)
@@ -27,11 +27,11 @@ predicate IsEven(n: int) {
 }
 
 // Helper functions for sequences
-function Last<T>(s: seq<T>) : T
+ghost function Last<T>(s: seq<T>) : T
     requires |s| > 0
 { s[|s|-1] }
 
-function DropLast<T>(s: seq<T>) : seq<T>
+ghost function DropLast<T>(s: seq<T>) : seq<T>
     requires |s| > 0
 { s[..|s|-1] }
 

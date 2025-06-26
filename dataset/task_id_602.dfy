@@ -1,8 +1,7 @@
 // Finds the first repeated character in a string. Returns a pair (found, c) where 
 // found is true if a repeated character was found, and c is the repeated character.
 method FindFirstRepeatedChar(s: string) returns (found: bool, c: char)
-    ensures found ==> exists i, j :: 0 <= i < j < |s| && s[i] == s[j] == c 
-                            && (forall k, l :: 0 <= k < i && k < l < |s| ==> s[k] != s[l])
+    ensures found ==> exists i, j :: 0 <= i < j < |s| && s[i] == s[j] == c && (forall k, l :: 0 <= k < i && k < l < |s| ==> s[k] != s[l])
     ensures !found ==> forall i, j :: 0 <= i < j < |s| ==> s[i] != s[j]
 
 {
